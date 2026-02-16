@@ -1,0 +1,19 @@
+{
+  "basic_features": [
+    "word_count",
+    "char_count",
+    "sentence_count",
+    "avg_word_length",
+    "average_tone",
+    "hashtag_count",
+    "mention_count",
+    "url_count",
+    "exclamation_count",
+    "question_count",
+    "all_caps_word_count",
+    "uppercase_ratio",
+    "punctuation_count"
+  ],
+  "trigram_vocab_size": 5000,
+  "total_features": 5013
+}
