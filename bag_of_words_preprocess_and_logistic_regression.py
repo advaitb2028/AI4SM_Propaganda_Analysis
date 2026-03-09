@@ -5,6 +5,9 @@ import seaborn as sns
 import nltk
 import string
 from sklearn.feature_extraction.text import CountVectorizer
+import re
+from nltk.stem import PorterStemmer
+import random
 
 # --- 1. THE NUCLEAR RESET ---
 # This command forces VS Code to close every single open image window
@@ -21,23 +24,52 @@ except FileNotFoundError:
     exit()
 
 # --- 3. CLEANING ---
-print("Step 2: Cleaning Text...")
+print("Step 2: Cleaning Text (Advanced)...")
 nltk.download('stopwords')
 stop_words = set(nltk.corpus.stopwords.words('english'))
 
-def simple_clean(text):
-    if not isinstance(text, str): return ""
-    text = text.lower()
-    text = "".join([c for c in text if c not in string.punctuation])
-    return " ".join([w for w in text.split() if w not in stop_words])
+# Initialize the Stemmer
+stemmer = PorterStemmer()
 
-df['clean_text'] = df['article_text'].apply(simple_clean)
+def advanced_clean(text):
+    if not isinstance(text, str): return ""
+    
+    # 1. Lowercase
+    text = text.lower()
+    
+    # 2. Remove all numbers/digits using regex
+    text = re.sub(r'\d+', '', text)
+    
+    # 3. Remove punctuation
+    text = "".join([c for c in text if c not in string.punctuation])
+    
+    # 4. Tokenize (split), remove stopwords, AND apply stemming in one pass
+    words = text.split()
+    cleaned_words = [stemmer.stem(w) for w in words if w not in stop_words]
+    
+    # 5. Join back together with a single space
+    return " ".join(cleaned_words)
+
+# Apply the new function to your dataframe
+df['clean_text'] = df['article_text'].apply(advanced_clean)
 
 # --- 4. VECTORIZING ---
 print("Step 3: Building Vectors...")
 vectorizer = CountVectorizer(max_features=2000)
 X = vectorizer.fit_transform(df['clean_text'])
 vocab = vectorizer.get_feature_names_out()
+
+print("-"*40)
+print("SANITY CHECK: The New Vocabulary")
+print("-"*40)
+
+# Convert the vocab array to a list and grab 20 random words
+random_vocab_sample = random.sample(list(vocab), 20)
+
+print(f"Total words in vocabulary: {len(vocab)}")
+print("Random sample of 20 stemmed words:")
+print(random_vocab_sample)
+print("-"*40 + "\n")
 
 # --- STEP 6: CUSTOM LOGISTIC REGRESSION FROM SCRATCH ---
 print("\n" + "="*40)
