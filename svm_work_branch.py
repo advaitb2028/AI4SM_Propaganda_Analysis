@@ -6,7 +6,7 @@ import nltk
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import LinearSVC
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 #Written with the help of AI
 
@@ -59,3 +59,21 @@ for word, weight in word_weights[:10]:
 print("\nTop 10 Strongest 'Propaganda' Indicators:")
 for word, weight in reversed(word_weights[-10:]):
     print(f"   {word}: {weight:.4f}")
+
+#RUN ON TEST DATASET
+
+df_test = pd.read_csv('qprop_data/proppy_1.0.test.tsv', sep='\t', header=None)
+df_test.rename(columns={0: 'article_text', 14: 'propaganda_label'}, inplace=True)
+df_test['propaganda_label'] = np.where(df_test['propaganda_label'] == -1, 0, 1)
+df_test['clean_text'] = df_test['article_text'].apply(advanced_clean)
+X_test = vectorizer.transform(df_test['clean_text'])
+y_test = df_test['propaganda_label']
+
+svm_predictions = svm_model.predict(X_test)
+
+print("\nFINAL SVM SCORES")
+print(f"Accuracy:    {accuracy_score(y_test, svm_predictions) * 100:.2f}%")
+print(f"Precision:   {precision_score(y_test, svm_predictions) * 100:.2f}%")
+print(f"Recall:      {recall_score(y_test, svm_predictions) * 100:.2f}%")
+print(f"F1 (Macro):  {f1_score(y_test, svm_predictions, average='macro') * 100:.2f}%")
+print(f"F1 (Weight): {f1_score(y_test, svm_predictions, average='weighted') * 100:.2f}%")
